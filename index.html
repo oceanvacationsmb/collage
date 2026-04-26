@@ -270,17 +270,35 @@
     let logoFailed = false;
 
     const logo = new Image();
-    logo.onload = () => {
-      logoReady = true;
-      logoFailed = false;
-      drawCollage();
-    };
-    logo.onerror = () => {
-      logoReady = false;
-      logoFailed = true;
-      drawCollage();
-    };
-    logo.src = 'akwtqkqugqkkxyjjkwtb.png';
+    logo.crossOrigin = 'anonymous';
+    const logoSources = [
+      'https://oceanvacationsmb.github.io/collage/akwtqkqugqkkxyijkwtb.png'
+    ];
+
+    function preloadLogo(sourceIndex = 0) {
+      if (sourceIndex >= logoSources.length) {
+        logoReady = false;
+        logoFailed = true;
+        drawCollage();
+        return;
+      }
+
+      logo.onload = () => {
+        logoReady = true;
+        logoFailed = false;
+        drawCollage();
+      };
+
+      logo.onerror = () => {
+        logoReady = false;
+        logoFailed = true;
+        preloadLogo(sourceIndex + 1);
+      };
+
+      logo.src = logoSources[sourceIndex] + '?v=' + Date.now();
+    }
+
+    preloadLogo();
 
     photoInput.addEventListener('change', async (e) => {
       const files = Array.from(e.target.files || []).filter(file => file.type.startsWith('image/'));
@@ -572,6 +590,7 @@
       const brokenImg = new Image();
       console.assert(isImageDrawable(brokenImg) === false, 'unloaded image should not be drawable');
       console.assert(typeof drawLogoIfNeeded === 'function', 'drawLogoIfNeeded should exist');
+      console.assert(Array.isArray(logoSources) && logoSources.length >= 3, 'logo should have fallback sources');
 
       const originalPhotos = photos;
       photos = [];
