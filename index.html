@@ -270,7 +270,6 @@
     let logoFailed = false;
 
     const logo = new Image();
-    logo.crossOrigin = 'anonymous';
     logo.onload = () => {
       logoReady = true;
       logoFailed = false;
@@ -281,7 +280,7 @@
       logoFailed = true;
       drawCollage();
     };
-    logo.src = './akwtqkqugqkkxyjjkwtb.png';
+    logo.src = 'akwtqkqugqkkxyjjkwtb.png';
 
     photoInput.addEventListener('change', async (e) => {
       const files = Array.from(e.target.files || []).filter(file => file.type.startsWith('image/'));
@@ -545,11 +544,11 @@
       if (!logoToggle.checked) return;
       if (!logoReady || !isImageDrawable(logo)) return;
 
-      const logoW = canvas.width * 0.24;
+      const logoW = canvas.width * 0.28;
       const logoRatio = logo.naturalHeight / logo.naturalWidth;
       const logoH = logoW * logoRatio;
-      const x = canvas.width - logoW - 24;
-      const y = canvas.height - logoH - 24;
+      const x = (canvas.width - logoW) / 2;
+      const y = (canvas.height - logoH) / 2;
 
       ctx.save();
       ctx.globalAlpha = 0.95;
