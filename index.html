@@ -128,14 +128,13 @@ function drawFit(img,x,y,w,h){
  ctx.rect(x,y,w,h);
  ctx.clip();
 
- let s = Math.min(w / img.width, h / img.height);
+ // FILL the box (crop if needed) so all frames look identical
+ let s = Math.max(w / img.width, h / img.height);
  let nw = img.width * s;
  let nh = img.height * s;
  let nx = x + (w - nw) / 2;
  let ny = y + (h - nh) / 2;
 
- ctx.fillStyle = "#fff";
- ctx.fillRect(x,y,w,h);
  ctx.drawImage(img, nx, ny, nw, nh);
  ctx.restore();
 }
