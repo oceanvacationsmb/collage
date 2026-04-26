@@ -106,7 +106,10 @@ function preloadLogo(){
  });
 }
 
-window.addEventListener('load', preloadLogo);
+window.addEventListener('load', async () => {
+  await preloadLogo();
+  buildCollage();
+});
 
 photoInput.onchange = async ()=>{
  for(const f of photoInput.files){
@@ -145,7 +148,7 @@ function buildCollage(){
  }
 
  const [cols,rows]=layout(photos.length);
- const gap=24, w=800, h=600;
+ const gap=24, w=700, h=700;
 
  canvas.width=cols*w+(cols+1)*gap;
  canvas.height=rows*h+(rows+1)*gap;
