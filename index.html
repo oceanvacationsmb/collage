@@ -5,175 +5,585 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Ocean Vacations Collage Creator</title>
   <style>
-    * { box-sizing: border-box; }
-    body { margin:0; font-family:Arial; background:#f4f4f4; }
-    .wrap { max-width:1200px; margin:auto; padding:24px; }
-    .panel { background:#fff; padding:20px; border-radius:16px; box-shadow:0 6px 20px rgba(0,0,0,.08); }
-    .upload-row { display:grid; grid-template-columns:2fr 1fr; gap:16px; }
-    .drop-zone { border:2px dashed #bbb; border-radius:18px; min-height:170px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
-    .drop-zone.dragover { border-color:#111; }
-    input[type=file] { display:none; }
-    .controls { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin-top:20px; }
-    select,button { padding:12px; border-radius:10px; border:1px solid #ccc; width:100%; }
-    button { background:#111; color:#fff; border:none; cursor:pointer; }
-    canvas { width:100%; margin-top:20px; border-radius:16px; }
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #222;
+      padding: 20px;
+    }
+
+    .app {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 28px;
+    }
+
+    .controls {
+      background: #fff;
+      padding: 18px;
+      border-radius: 14px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .controls label {
+      font-weight: bold;
+    }
+
+    input[type="file"] {
+      padding: 8px;
+      background: #f7f7f7;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      border: none;
+      background: #0b6b88;
+      color: white;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background: #084f66;
+    }
+
+    .preview-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .panel {
+      background: #fff;
+      padding: 18px;
+      border-radius: 14px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+    }
+
+    .panel h2 {
+      margin-top: 0;
+      font-size: 20px;
+      text-align: center;
+    }
+
+    .hint {
+      font-size: 13px;
+      text-align: center;
+      color: #666;
+      margin-bottom: 12px;
+    }
+
+    .image-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      min-height: 260px;
+      border: 2px dashed #b8c4cc;
+      border-radius: 14px;
+      padding: 12px;
+      background: #fafafa;
+      align-content: start;
+    }
+
+    .image-grid.drag-active {
+      border-color: #0b6b88;
+      background: #eef8fb;
+    }
+
+    .drop-message {
+      grid-column: 1 / -1;
+      height: 220px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: #666;
+      font-size: 18px;
+      font-weight: bold;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .drop-message span {
+      margin-top: 8px;
+      font-size: 13px;
+      font-weight: normal;
+      color: #888;
+    }
+
+    .image-item {
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 2px solid #ddd;
+      background: #eee;
+      cursor: grab;
+      height: 120px;
+      user-select: none;
+    }
+
+    .image-item:active {
+      cursor: grabbing;
+    }
+
+    .image-item.dragging {
+      opacity: 0.35;
+    }
+
+    .image-item.drag-over {
+      border-color: #0b6b88;
+      box-shadow: 0 0 0 3px rgba(11,107,136,0.2);
+    }
+
+    .image-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      pointer-events: none;
+    }
+
+    .order-number {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      background: rgba(0,0,0,0.75);
+      color: #fff;
+      font-size: 13px;
+      font-weight: bold;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .remove-btn {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: rgba(180,0,0,0.85);
+      color: #fff;
+      border: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      padding: 0;
+      line-height: 24px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    canvas {
+      width: 100%;
+      height: auto;
+      display: block;
+      background: white;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: bold;
+    }
+
+    @media (max-width: 900px) {
+      .preview-section {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .image-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
   </style>
 </head>
 <body>
-<div class="wrap">
-<div class="panel">
-<h2>Ocean Vacations Collage Creator</h2>
+  <div class="app">
+    <h1>Ocean Vacations Collage Creator</h1>
 
-<div class="upload-row">
-<div>
-<label>Photos (4+)</label>
-<div id="photoDrop" class="drop-zone">Drag Photos</div>
-<input id="photoInput" type="file" multiple accept="image/*">
-</div>
+    <input type="file" id="photoInput" accept="image/*" multiple hidden />
 
-<div>
-<label>Logo</label>
-<div style="font-size:14px;color:#666">Preloaded logo ready</div>
-</div>
-</div>
+    <div class="controls">
+      <div class="toggle-row">
+        <input type="checkbox" id="logoToggle" checked />
+        <label for="logoToggle">Use Logo</label>
+      </div>
 
-<div class="controls">
-<div>
-<label>Use Logo</label>
-<select id="useLogo" onchange="buildCollage()">
-<option value="no">Without Logo</option>
-<option value="yes" selected>With Logo</option>
-</select>
-</div>
+      <button id="downloadBtn">Download Collage</button>
+      <button id="clearBtn">Clear</button>
+    </div>
 
+    <div class="preview-section">
+      <div class="panel">
+        <div class="hint">Drag photos here, then drag them with your mouse to reorder.</div>
+        <div id="imageGrid" class="image-grid"></div>
+      </div>
 
+      <div class="panel">
+        <h2>Collage Preview</h2>
+        <canvas id="collageCanvas" width="1200" height="900"></canvas>
+      </div>
+    </div>
+  </div>
 
-<div>
-<button onclick="downloadJPG()">Download</button>
-</div>
-</div>
-</div>
+  <script>
+    const photoInput = document.getElementById('photoInput');
+    const imageGrid = document.getElementById('imageGrid');
+    const canvas = document.getElementById('collageCanvas');
+    const ctx = canvas.getContext('2d');
+    const logoToggle = document.getElementById('logoToggle');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const clearBtn = document.getElementById('clearBtn');
 
-<canvas id="canvas"></canvas>
-</div>
+    let photos = [];
+    let dragStartIndex = null;
+    let logoReady = false;
+    let logoFailed = false;
 
-<script>
-const photoInput = document.getElementById('photoInput');
-const photoDrop = document.getElementById('photoDrop');
-const useLogoSelect = document.getElementById('useLogo');
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
+    const logo = new Image();
+    logo.crossOrigin = 'anonymous';
+    logo.onload = () => {
+      logoReady = true;
+      logoFailed = false;
+      drawCollage();
+    };
+    logo.onerror = () => {
+      logoReady = false;
+      logoFailed = true;
+      drawCollage();
+    };
+    logo.src = 'https://static.wixstatic.com/media/6e5b51_8c0c9f5b2b9d4a689a8f08c7e4f6f3d4~mv2.png';
 
-const LOGO_URL = "https://oceanvacationsmb.github.io/collage/akwtqkqugqkkxyijkwtb.png";
+    photoInput.addEventListener('change', async (e) => {
+      const files = Array.from(e.target.files || []).filter(file => file.type.startsWith('image/'));
+      await addPhotos(files);
+      photoInput.value = '';
+    });
 
-let photos = [];
-let logoImg = null;
+    imageGrid.addEventListener('click', (e) => {
+      if (photos.length === 0 || e.target.classList.contains('drop-message') || e.target.closest('.drop-message')) {
+        photoInput.click();
+      }
+    });
 
-function readImage(file){
- return new Promise(res=>{
-  const r=new FileReader();
-  r.onload=()=>{
-   const img=new Image();
-   img.onload=()=>res(img);
-   img.src=r.result;
-  };
-  r.readAsDataURL(file);
- });
-}
+    imageGrid.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      imageGrid.classList.add('drag-active');
+    });
 
-function preloadLogo(){
- return new Promise(res=>{
-  const img=new Image();
-  img.crossOrigin="anonymous";
-  img.onload=()=>{
-    logoImg = img;
-    res();
-  };
-  img.onerror=()=>res();
-  img.src = LOGO_URL;
- });
-}
+    imageGrid.addEventListener('dragleave', (e) => {
+      if (!imageGrid.contains(e.relatedTarget)) {
+        imageGrid.classList.remove('drag-active');
+      }
+    });
 
-window.addEventListener('load', async () => {
-  await preloadLogo();
-  buildCollage();
-});
+    imageGrid.addEventListener('drop', async (e) => {
+      e.preventDefault();
+      imageGrid.classList.remove('drag-active');
 
-photoInput.onchange = async ()=>{
- for(const f of photoInput.files){
-  photos.push(await readImage(f));
- }
- buildCollage();
-}
+      const files = Array.from(e.dataTransfer.files || []).filter(file => file.type.startsWith('image/'));
+      if (files.length > 0) {
+        await addPhotos(files);
+      }
+    });
 
-photoDrop.onclick = ()=>photoInput.click();
-photoDrop.ondrop = async e=>{
- e.preventDefault();
- for(const f of e.dataTransfer.files){
-  photos.push(await readImage(f));
- }
- buildCollage();
-}
-photoDrop.ondragover = e=>e.preventDefault();
+    logoToggle.addEventListener('change', drawCollage);
+    downloadBtn.addEventListener('click', downloadCollage);
 
-function layout(count){
- if(count<=4) return [2,2];
- if(count<=6) return [3,2];
- return [3,3];
-}
+    clearBtn.addEventListener('click', () => {
+      photos = [];
+      renderPhotoOrder();
+      drawCollage();
+    });
 
-function drawFit(img,x,y,w,h){
- ctx.save();
- ctx.beginPath();
- ctx.rect(x,y,w,h);
- ctx.clip();
+    async function addPhotos(files) {
+      for (const file of files) {
+        try {
+          const dataUrl = await fileToDataUrl(file);
+          const img = await loadImage(dataUrl);
+          if (isImageDrawable(img)) {
+            photos.push({ src: dataUrl, img });
+          }
+        } catch (error) {
+          console.warn('Skipped broken image:', file.name, error);
+        }
+      }
 
- // FILL the box (crop if needed) so all frames look identical
- let s = Math.max(w / img.width, h / img.height);
- let nw = img.width * s;
- let nh = img.height * s;
- let nx = x + (w - nw) / 2;
- let ny = y + (h - nh) / 2;
+      renderPhotoOrder();
+      drawCollage();
+    }
 
- ctx.drawImage(img, nx, ny, nw, nh);
- ctx.restore();
-}
+    function fileToDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error('Could not read file.'));
+        reader.readAsDataURL(file);
+      });
+    }
 
-function buildCollage(){
- if(photos.length<4){
-  canvas.width=1200; canvas.height=800;
-  ctx.fillText("Add 4+ photos",600,400);
-  return;
- }
+    function loadImage(src) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error('Image failed to load.'));
+        img.src = src;
+      });
+    }
 
- const [cols,rows]=layout(photos.length);
- const gap=20, w=900, h=600;
+    function isImageDrawable(img) {
+      return img && img.complete && img.naturalWidth > 0 && img.naturalHeight > 0;
+    }
 
- canvas.width=cols*w+(cols+1)*gap;
- canvas.height=rows*h+(rows+1)*gap;
+    function renderPhotoOrder() {
+      imageGrid.innerHTML = '';
 
- ctx.fillStyle="#fff";
- ctx.fillRect(0,0,canvas.width,canvas.height);
+      if (photos.length === 0) {
+        const message = document.createElement('div');
+        message.className = 'drop-message';
+        message.innerHTML = 'Click to upload photos<br><span>or drag photos here</span>';
+        imageGrid.appendChild(message);
+        return;
+      }
 
- photos.forEach((img,i)=>{
-  let c=i%cols, r=Math.floor(i/cols);
-  let x=gap+c*(w+gap), y=gap+r*(h+gap);
+      photos.forEach((photo, index) => {
+        const item = document.createElement('div');
+        item.className = 'image-item';
+        item.draggable = true;
+        item.dataset.index = index;
 
-  drawFit(img,x,y,w,h);
- });
+        const img = document.createElement('img');
+        img.src = photo.src;
 
- if(useLogoSelect.value==="yes" && logoImg){
-   let size=264;
-   drawFit(logoImg,(canvas.width-size)/2,(canvas.height-size)/2,size,size);
- }
-}
+        const number = document.createElement('div');
+        number.className = 'order-number';
+        number.textContent = index + 1;
 
-function downloadJPG(){
- let a=document.createElement('a');
- a.href=canvas.toDataURL("image/jpeg",0.95);
- a.download="collage.jpg";
- a.click();
-}
-</script>
+        const remove = document.createElement('button');
+        remove.className = 'remove-btn';
+        remove.textContent = '×';
+        remove.onclick = (e) => {
+          e.stopPropagation();
+          photos.splice(index, 1);
+          renderPhotoOrder();
+          drawCollage();
+        };
+
+        item.appendChild(img);
+        item.appendChild(number);
+        item.appendChild(remove);
+
+        item.addEventListener('dragstart', handleDragStart);
+        item.addEventListener('dragover', handleDragOver);
+        item.addEventListener('dragleave', handleDragLeave);
+        item.addEventListener('drop', handleDrop);
+        item.addEventListener('dragend', handleDragEnd);
+
+        imageGrid.appendChild(item);
+      });
+    }
+
+    function handleDragStart(e) {
+      dragStartIndex = Number(this.dataset.index);
+      this.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', String(dragStartIndex));
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.classList.add('drag-over');
+      e.dataTransfer.dropEffect = 'move';
+    }
+
+    function handleDragLeave() {
+      this.classList.remove('drag-over');
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const dropIndex = Number(this.dataset.index);
+      this.classList.remove('drag-over');
+
+      if (dragStartIndex === null || dragStartIndex === dropIndex) return;
+      if (!Number.isInteger(dragStartIndex) || !Number.isInteger(dropIndex)) return;
+      if (dragStartIndex < 0 || dragStartIndex >= photos.length) return;
+      if (dropIndex < 0 || dropIndex >= photos.length) return;
+
+      const [movedPhoto] = photos.splice(dragStartIndex, 1);
+      photos.splice(dropIndex, 0, movedPhoto);
+
+      dragStartIndex = null;
+      renderPhotoOrder();
+      drawCollage();
+    }
+
+    function handleDragEnd() {
+      document.querySelectorAll('.image-item').forEach(item => {
+        item.classList.remove('dragging', 'drag-over');
+      });
+      dragStartIndex = null;
+    }
+
+    function drawCollage() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      if (photos.length === 0) {
+        ctx.fillStyle = '#666';
+        ctx.font = '34px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Drag photos here to preview collage', canvas.width / 2, canvas.height / 2);
+        drawLogoIfNeeded();
+        return;
+      }
+
+      const gap = 10;
+      const padding = 10;
+      const usableW = canvas.width - padding * 2;
+      const usableH = canvas.height - padding * 2;
+
+      let boxes = [];
+      const count = photos.length;
+
+      if (count === 1) {
+        boxes = [{ x: padding, y: padding, w: usableW, h: usableH }];
+      } else if (count === 2) {
+        boxes = [
+          { x: padding, y: padding, w: (usableW - gap) / 2, h: usableH },
+          { x: padding + (usableW + gap) / 2, y: padding, w: (usableW - gap) / 2, h: usableH }
+        ];
+      } else if (count === 3) {
+        boxes = [
+          { x: padding, y: padding, w: usableW, h: (usableH - gap) / 2 },
+          { x: padding, y: padding + (usableH + gap) / 2, w: (usableW - gap) / 2, h: (usableH - gap) / 2 },
+          { x: padding + (usableW + gap) / 2, y: padding + (usableH + gap) / 2, w: (usableW - gap) / 2, h: (usableH - gap) / 2 }
+        ];
+      } else {
+        const cols = 2;
+        const rows = 2;
+        const boxW = (usableW - gap) / cols;
+        const boxH = (usableH - gap) / rows;
+
+        boxes = [
+          { x: padding, y: padding, w: boxW, h: boxH },
+          { x: padding + boxW + gap, y: padding, w: boxW, h: boxH },
+          { x: padding, y: padding + boxH + gap, w: boxW, h: boxH },
+          { x: padding + boxW + gap, y: padding + boxH + gap, w: boxW, h: boxH }
+        ];
+      }
+
+      const photosToDraw = photos.slice(0, boxes.length);
+      photosToDraw.forEach((photo, index) => {
+        drawImageCover(photo.img, boxes[index].x, boxes[index].y, boxes[index].w, boxes[index].h);
+      });
+
+      drawLogoIfNeeded();
+    }
+
+    function drawImageCover(img, x, y, w, h) {
+      if (!isImageDrawable(img)) return;
+
+      const imgRatio = img.naturalWidth / img.naturalHeight;
+      const boxRatio = w / h;
+
+      let sx, sy, sw, sh;
+
+      if (imgRatio > boxRatio) {
+        sh = img.naturalHeight;
+        sw = img.naturalHeight * boxRatio;
+        sx = (img.naturalWidth - sw) / 2;
+        sy = 0;
+      } else {
+        sw = img.naturalWidth;
+        sh = img.naturalWidth / boxRatio;
+        sx = 0;
+        sy = (img.naturalHeight - sh) / 2;
+      }
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(x, y, w, h);
+      ctx.clip();
+      ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+      ctx.restore();
+    }
+
+    function drawLogoIfNeeded() {
+      if (!logoToggle.checked) return;
+      if (logoFailed) return;
+      if (!logoReady || !isImageDrawable(logo)) return;
+
+      const logoW = canvas.width * 0.22;
+      const logoRatio = logo.naturalHeight / logo.naturalWidth;
+      const logoH = logoW * (logoRatio || 0.35);
+      const x = canvas.width - logoW - 24;
+      const y = canvas.height - logoH - 24;
+
+      ctx.save();
+      ctx.globalAlpha = 0.95;
+      ctx.drawImage(logo, x, y, logoW, logoH);
+      ctx.restore();
+    }
+
+    function downloadCollage() {
+      drawCollage();
+      const link = document.createElement('a');
+      link.download = 'ocean-vacations-collage.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    function runTests() {
+      console.assert(typeof drawCollage === 'function', 'drawCollage should exist');
+      console.assert(typeof drawImageCover === 'function', 'drawImageCover should exist');
+      console.assert(isImageDrawable(null) === null, 'null image should not be drawable');
+
+      const brokenImg = new Image();
+      console.assert(isImageDrawable(brokenImg) === false, 'unloaded image should not be drawable');
+
+      const originalPhotos = photos;
+      photos = [];
+      renderPhotoOrder();
+      console.assert(imageGrid.querySelector('.drop-message'), 'empty state should show upload/drop message');
+      photos = originalPhotos;
+    }
+
+    renderPhotoOrder();
+    drawCollage();
+    runTests();
+  </script>
 </body>
 </html>
