@@ -244,7 +244,6 @@
 
     <div class="preview-section">
       <div class="panel">
-        <div class="hint">Drag photos here, then drag them with your mouse to reorder.</div>
         <div id="imageGrid" class="image-grid"></div>
       </div>
 
@@ -479,10 +478,6 @@
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       if (photos.length === 0) {
-        ctx.fillStyle = '#666';
-        ctx.font = '34px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText('Drag photos here to preview collage', canvas.width / 2, canvas.height / 2);
         drawLogoIfNeeded();
         return;
       }
@@ -590,7 +585,7 @@
       const brokenImg = new Image();
       console.assert(isImageDrawable(brokenImg) === false, 'unloaded image should not be drawable');
       console.assert(typeof drawLogoIfNeeded === 'function', 'drawLogoIfNeeded should exist');
-      console.assert(Array.isArray(logoSources) && logoSources.length >= 3, 'logo should have fallback sources');
+      console.assert(Array.isArray(logoSources) && logoSources.length === 1, 'logo should use the exact provided URL only');
 
       const originalPhotos = photos;
       photos = [];
