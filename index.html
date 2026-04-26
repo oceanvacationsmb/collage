@@ -557,15 +557,28 @@
       if (!logoToggle.checked) return;
       if (!logoReady || !isImageDrawable(logo)) return;
 
-      const logoW = canvas.width * 0.28;
+      const baseSize = canvas.width * 0.28;
+      const logoW = baseSize * 0.95; // 5% smaller
       const logoRatio = logo.naturalHeight / logo.naturalWidth;
       const logoH = logoW * logoRatio;
       const x = (canvas.width - logoW) / 2;
       const y = (canvas.height - logoH) / 2;
 
       ctx.save();
+
+      // circle mask
+      const radius = logoW / 2;
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+      ctx.closePath();
+      ctx.clip();
+
       ctx.globalAlpha = 0.95;
       ctx.drawImage(logo, x, y, logoW, logoH);
+
       ctx.restore();
     }
 
