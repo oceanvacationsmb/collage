@@ -281,7 +281,7 @@
       logoFailed = true;
       drawCollage();
     };
-    logo.src = 'https://static.wixstatic.com/media/6e5b51_8c0c9f5b2b9d4a689a8f08c7e4f6f3d4~mv2.png';
+    logo.src = './akwtqkqugqkkxyjjkwtb.png';
 
     photoInput.addEventListener('change', async (e) => {
       const files = Array.from(e.target.files || []).filter(file => file.type.startsWith('image/'));
@@ -543,37 +543,17 @@
 
     function drawLogoIfNeeded() {
       if (!logoToggle.checked) return;
+      if (!logoReady || !isImageDrawable(logo)) return;
 
       const logoW = canvas.width * 0.24;
-      const logoH = logoW * 0.34;
+      const logoRatio = logo.naturalHeight / logo.naturalWidth;
+      const logoH = logoW * logoRatio;
       const x = canvas.width - logoW - 24;
       const y = canvas.height - logoH - 24;
 
       ctx.save();
       ctx.globalAlpha = 0.95;
-
-      if (logoReady && isImageDrawable(logo)) {
-        const realLogoRatio = logo.naturalHeight / logo.naturalWidth;
-        const realLogoH = logoW * (realLogoRatio || 0.35);
-        ctx.drawImage(logo, x, canvas.height - realLogoH - 24, logoW, realLogoH);
-      } else {
-        ctx.fillStyle = 'rgba(255,255,255,0.92)';
-        ctx.fillRect(x, y, logoW, logoH);
-
-        ctx.strokeStyle = 'rgba(11,107,136,0.9)';
-        ctx.lineWidth = 4;
-        ctx.strokeRect(x, y, logoW, logoH);
-
-        ctx.fillStyle = '#0b6b88';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.font = 'bold 34px Arial';
-        ctx.fillText('Ocean', x + logoW / 2, y + logoH * 0.42);
-
-        ctx.font = 'bold 26px Arial';
-        ctx.fillText('Vacations', x + logoW / 2, y + logoH * 0.70);
-      }
-
+      ctx.drawImage(logo, x, y, logoW, logoH);
       ctx.restore();
     }
 
