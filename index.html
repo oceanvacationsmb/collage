@@ -127,12 +127,16 @@ function drawFit(img,x,y,w,h){
  ctx.beginPath();
  ctx.rect(x,y,w,h);
  ctx.clip();
- ctx.fillStyle="#fff";
- ctx.fillRect(x,y,w,h);
 
- let s=Math.min(w/img.width,h/img.height);
- let nw=img.width*s, nh=img.height*s;
- ctx.drawImage(img,x+(w-nw)/2,y+(h-nh)/2,nw,nh);
+ let s = Math.min(w / img.width, h / img.height);
+ let nw = img.width * s;
+ let nh = img.height * s;
+ let nx = x + (w - nw) / 2;
+ let ny = y + (h - nh) / 2;
+
+ ctx.fillStyle = "#fff";
+ ctx.fillRect(x,y,w,h);
+ ctx.drawImage(img, nx, ny, nw, nh);
  ctx.restore();
 }
 
@@ -144,7 +148,7 @@ function buildCollage(){
  }
 
  const [cols,rows]=layout(photos.length);
- const gap=24, w=700, h=700;
+ const gap=20, w=900, h=600;
 
  canvas.width=cols*w+(cols+1)*gap;
  canvas.height=rows*h+(rows+1)*gap;
@@ -160,7 +164,7 @@ function buildCollage(){
  });
 
  if(useLogoSelect.value==="yes" && logoImg){
-   let size=240;
+   let size=264;
    drawFit(logoImg,(canvas.width-size)/2,(canvas.height-size)/2,size,size);
  }
 }
