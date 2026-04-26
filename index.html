@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Collage JPG Builder</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      color: #222;
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+
+    p {
+      margin: 0 0 20px;
+      color: #555;
+    }
+
+    .panel {
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      align-items: end;
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+    }
+
+    button {
+      background: #111;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .secondary {
+      background: #555;
+    }
+
+    canvas {
+      width: 100%;
+      max-width: 100%;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    }
+
+    .note {
+      font-size: 14px;
+      color: #666;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="panel">
+      <h1>Collage JPG Builder</h1>
+      <p>Upload property photos, optionally upload a logo, then download one clean JPG collage.</p>
+
+      <div class="controls">
+        <div>
+          <label>Property Photos</label>
+          <input id="photoInput" type="file" accept="image/*" multiple />
+        </div>
+
+        <div>
+          <label>Logo Optional</label>
+          <input id="logoInput" type="file" accept="image/*" />
+        </div>
+
+        <div>
+          <label>Layout</label>
+          <select id="layoutSelect">
+            <option value="auto">Auto</option>
+            <option value="2x2">2 x 2</option>
+            <option value="3x2">3 x 2</option>
+            <option value="3x3">3 x 3</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Spacing</label>
+          <select id="gapSelect">
+            <option value="24">Clean</option>
+            <option value="40" selected>Professional</option>
+            <option value="60">Luxury</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Background</label>
+          <select id="bgSelect">
+            <option value="#ffffff" selected>White</option>
+            <option value="#f5f5f5">Soft Gray</option>
+            <option value="#111111">Black</option>
+          </select>
+        </div>
+
+        <div>
+          <button onclick="buildCollage()">Create Collage</button>
+        </div>
+
+        <div>
+          <button class="secondary" onclick="downloadJPG()">Download JPG</button>
+        </div>
+      </div>
+
+      <div class="note">Photos are fitted inside each box without cropping. No outside images are added.</div>
+    </div>
+
+    <canvas id="collageCanvas"></canvas>
+  </div>
+
+  <script>
+    const photoInput = document.getElementById('photoInput');
+    const logoInput = document.getElementById('logoInput');
+    const canvas = document.getElementById('collageCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let loadedPhotos = [];
+    let loadedLogo = null;
+
+    function readImage(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = reject;
+          img.src = reader.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    photoInput.addEventListener('change', async () => {
+      loadedPhotos = [];
+      for (const file of photoInput.files) {
+        loadedPhotos.push(await readImage(file));
+      }
+      buildCollage();
+    });
+
+    logoInput.addEventListener('change', async () => {
+      const file = logoInput.files[0];
+      loadedLogo = file ? await readImage(file) : null;
+      buildCollage();
+    });
+
+    function getLayout(count) {
+      const selected = document.getElementById('layoutSelect').value;
+
+      if (selected === '2x2') return { cols: 2, rows: 2 };
+      if (selected === '3x2') return { cols: 3, rows: 2 };
+      if (selected === '3x3') return { cols: 3, rows: 3 };
+
+      if (count <= 1) return { cols: 1, rows: 1 };
+      if (count <= 4) return { cols: 2, rows: 2 };
+      if (count <= 6) return { cols: 3, rows: 2 };
+      return { cols: 3, rows: 3 };
+    }
+
+    function drawFitImage(img, x, y, w, h) {
+      const scale = Math.min(w / img.width, h / img.height);
+      const nw = img.width * scale;
+      const nh = img.height * scale;
+      const nx = x + (w - nw) / 2;
+      const ny = y + (h - nh) / 2;
+      ctx.drawImage(img, nx, ny, nw, nh);
+    }
+
+    function buildCollage() {
+      if (!loadedPhotos.length) {
+        canvas.width = 1200;
+        canvas.height = 800;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#777';
+        ctx.font = '34px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Upload photos to create a collage', canvas.width / 2, canvas.height / 2);
+        return;
+      }
+
+      const count = loadedPhotos.length;
+      const gap = Number(document.getElementById('gapSelect').value);
+      const bg = document.getElementById('bgSelect').value;
+      const { cols, rows } = getLayout(count);
+
+      const cellW = 900;
+      const cellH = 600;
+
+      canvas.width = cols * cellW + (cols + 1) * gap;
+      canvas.height = rows * cellH + (rows + 1) * gap;
+
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      loadedPhotos.slice(0, cols * rows).forEach((img, index) => {
+        const col = index % cols;
+        const row = Math.floor(index / cols);
+        const x = gap + col * (cellW + gap);
+        const y = gap + row * (cellH + gap);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x, y, cellW, cellH);
+        drawFitImage(img, x, y, cellW, cellH);
+      });
+
+      if (loadedLogo) {
+        const logoBox = Math.min(canvas.width, canvas.height) * 0.18;
+        const padding = logoBox * 0.16;
+        const boxX = (canvas.width - logoBox) / 2;
+        const boxY = (canvas.height - logoBox) / 2;
+
+        ctx.save();
+        ctx.shadowColor = 'rgba(0,0,0,0.25)';
+        ctx.shadowBlur = 18;
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        roundedRect(ctx, boxX, boxY, logoBox, logoBox, 24);
+        ctx.fill();
+        ctx.restore();
+
+        drawFitImage(loadedLogo, boxX + padding, boxY + padding, logoBox - padding * 2, logoBox - padding * 2);
+      }
+    }
+
+    function roundedRect(ctx, x, y, w, h, r) {
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+    }
+
+    function downloadJPG() {
+      if (!loadedPhotos.length) return alert('Upload photos first.');
+
+      const link = document.createElement('a');
+      link.download = 'property-collage.jpg';
+      link.href = canvas.toDataURL('image/jpeg', 0.95);
+      link.click();
+    }
+
+    buildCollage();
+  </script>
+</body>
+</html>
