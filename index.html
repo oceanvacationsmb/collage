@@ -10,7 +10,7 @@
     .wrap { max-width:1200px; margin:auto; padding:24px; }
     .panel { background:#fff; padding:20px; border-radius:16px; box-shadow:0 6px 20px rgba(0,0,0,.08); }
     .upload-row { display:grid; grid-template-columns:2fr 1fr; gap:16px; }
-    .drop-zone { border:2px dashed #bbb; border-radius:18px; min-height:170px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; }
+    .drop-zone { border:2px dashed #bbb; border-radius:18px; min-height:170px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
     .drop-zone.dragover { border-color:#111; }
     input[type=file] { display:none; }
     .controls { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin-top:20px; }
@@ -40,19 +40,9 @@
 <div class="controls">
 <div>
 <label>Use Logo</label>
-<select id="useLogo">
+<select id="useLogo" onchange="buildCollage()">
 <option value="no">Without Logo</option>
 <option value="yes" selected>With Logo</option>
-</select>
-</div>
-
-<div>
-<label>Layout</label>
-<select id="layoutSelect">
-<option value="auto">Auto</option>
-<option value="2x2">2x2</option>
-<option value="3x2">3x2</option>
-<option value="3x3">3x3</option>
 </select>
 </div>
 
@@ -135,9 +125,17 @@ function layout(count){
 }
 
 function drawFit(img,x,y,w,h){
+ ctx.save();
+ ctx.beginPath();
+ ctx.rect(x,y,w,h);
+ ctx.clip();
+ ctx.fillStyle="#fff";
+ ctx.fillRect(x,y,w,h);
+
  let s=Math.min(w/img.width,h/img.height);
  let nw=img.width*s, nh=img.height*s;
  ctx.drawImage(img,x+(w-nw)/2,y+(h-nh)/2,nw,nh);
+ ctx.restore();
 }
 
 function buildCollage(){
@@ -159,11 +157,12 @@ function buildCollage(){
  photos.forEach((img,i)=>{
   let c=i%cols, r=Math.floor(i/cols);
   let x=gap+c*(w+gap), y=gap+r*(h+gap);
+
   drawFit(img,x,y,w,h);
  });
 
  if(useLogoSelect.value==="yes" && logoImg){
-   let size=200;
+   let size=240;
    drawFit(logoImg,(canvas.width-size)/2,(canvas.height-size)/2,size,size);
  }
 }
