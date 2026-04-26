@@ -41,8 +41,8 @@
 <div>
 <label>Use Logo</label>
 <select id="useLogo">
-<option value="no" selected>Without Logo</option>
-<option value="yes">With Logo</option>
+<option value="no">Without Logo</option>
+<option value="yes" selected>With Logo</option>
 </select>
 </div>
 
@@ -145,7 +145,7 @@ function buildCollage(){
  }
 
  const [cols,rows]=layout(photos.length);
- const gap=40, w=800, h=600;
+ const gap=24, w=800, h=600;
 
  canvas.width=cols*w+(cols+1)*gap;
  canvas.height=rows*h+(rows+1)*gap;
